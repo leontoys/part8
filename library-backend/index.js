@@ -1,5 +1,7 @@
 const { ApolloServer } = require('@apollo/server')
 const { startStandaloneServer } = require('@apollo/server/standalone')
+const { v1: uuid } = require('uuid')
+const { GraphQLError } = require('graphql')
 
 let authors = [
   {
@@ -100,13 +102,14 @@ let books = [
 const typeDefs = `
   type Author{
     name : String!
+    born : Int
     bookCount : String
   }
 
   type Book{
     title : String!
     author : String
-    published : String
+    published : Int
     genres : [String]
   }
 
@@ -115,6 +118,15 @@ const typeDefs = `
     authorCount : Int!
     allBooks(author:String,genre:String) : [Book!]
     allAuthors : [Author!]
+  }
+
+  type Mutation {
+    addBook(
+      title : String!
+      author : String!
+      published : Int!
+      genres : [String!]
+    ):Book
   }
 `
 
@@ -142,6 +154,27 @@ const resolvers = {
   },
   Author : {
     bookCount : ({name}) => books.filter(book => book.author === name).length  
+  },
+  Mutation : {
+    addBook : (root,args) => {
+      //if author is not added create Author
+      const author = authors.find(author => author.name === args.author)
+      console.log("author",author)
+      if(!author){
+        console.log("createing author")
+        //create author
+        const author = { name:args.author, id:uuid()}
+        console.log("new author",author)
+        authors = authors.concat(author)
+        console.log("authors",authors)
+      }
+
+      //create new book with arguments and generated id
+      const book = {...args,id:uuid()}
+      //add book
+      books = books.concat(book)
+      return book
+    }
   }
 }
 
