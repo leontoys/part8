@@ -105,15 +105,15 @@ const typeDefs = `
 
   type Book{
     title : String!
-    author : String!
-    published : String!
-    genres : [String!]
+    author : String
+    published : String
+    genres : [String]
   }
 
   type Query {
     bookCount : Int!
     authorCount : Int!
-    allBooks : [Book!]
+    allBooks(author:String) : [Book!]
     allAuthors : [Author!]
   }
 `
@@ -122,7 +122,15 @@ const resolvers = {
   Query: {
     bookCount : () => books.length,
     authorCount : () => authors.length,
-    allBooks : () => books,
+    allBooks : (root,args) => {
+      //if no arguments passed - ie no filter on author
+      //then pass all
+      if(!args.author){
+        return books
+      }
+      //filter the books
+      return books.filter(book => book.author === args.author)
+    },
     allAuthors : () => authors      
   },
   Author : {
