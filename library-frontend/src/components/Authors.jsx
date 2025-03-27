@@ -26,10 +26,10 @@ const Authors = (props) => {
   const handleSubmit = (e)=>{
     e.preventDefault()
     console.log('name',name)
-    console.log('year',year)
+    console.log('year',year)      
     //update
-    changeAuthor({ variables: { name, year} })
-    setName('')
+    changeAuthor({ variables: { name,year } })
+    setName(authors[0].name)
     setYear('')
   }
 
@@ -54,15 +54,22 @@ const Authors = (props) => {
       </table>
       <h2>Set birthyear</h2>
       <form onSubmit={handleSubmit}>
-        <div>
-          name
-          <input value={name}
-            onChange={e=>setName(e.target.value)}/>
-        </div>
+      <label>
+        <select name='name'
+                value={name}
+                onChange={e=>setName(e.target.value)}>
+          {authors.map( author => (
+            <option key={author.name}
+                    value={author.name}>{author.name}</option>
+           ))}
+        </select>
+      </label>
         <div>
           born
-          <input value={year}
-            onChange={e=>setYear(Number(e.target.value))}/>
+          <input name='year' 
+            value={year}
+            onChange={e=>setYear(Number(e.target.value))}
+            />
         </div>
         <button type="submit">update author</button>
       </form>
