@@ -181,13 +181,17 @@ const resolvers = {
       return book
     },
     editAuthor : (root,args) => {
+      console.log('---edit author---')
       //find author
       const author = authors.find(author => author.name === args.name)
       if(!author){
         return null
       }
+      console.log('author',author)
       const updatedAuthor = {...author,born:args.setBornTo}
-      authors = authors.map( author => author.name === args.author ? updatedAuthor : author)
+      console.log('updated author',updatedAuthor)
+      authors = authors.map( author => author.name === args.name ? updatedAuthor : author)
+      console.log('authors',authors)
       return updatedAuthor
     }
   }
