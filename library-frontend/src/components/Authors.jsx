@@ -12,7 +12,9 @@ const Authors = (props) => {
   const [name,setName] = useState('')
   const [year,setYear] = useState('')  
 
-  const [changeAuthor] = useMutation(EDIT_AUTHOR)
+  const [changeAuthor] = useMutation(EDIT_AUTHOR,{
+   refetchQueries:[{query:ALL_AUTHORS}]
+   })  
 
   const result = useQuery(ALL_AUTHORS)
   if(result.loading){
