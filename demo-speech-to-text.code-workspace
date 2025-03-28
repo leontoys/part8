@@ -1,0 +1,11 @@
+{
+	"folders": [
+		{
+			"path": "../demo-speech-to-text"
+		},
+		{
+			"path": "../demo-transformer-whisper"
+		}
+	],
+	"settings": {}
+}

@@ -3,6 +3,23 @@ const { startStandaloneServer } = require('@apollo/server/standalone')
 const { v1: uuid } = require('uuid')
 const { GraphQLError } = require('graphql')
 
+const mongoose = require('mongoose')
+mongoose.set('strictQuery',false)
+const Book = require('./models/book')
+const Author = require('./models/author')
+require('dotenv').config()
+
+const MONGODB_URI = process.env.MONGODB_URI
+console.log('connecting',MONGODB_URI)
+
+mongoose.connect(MONGODB_URI)
+  .then(()=>{
+    console.log('connected to mongo db')
+  })
+  .catch((error)=>{
+    console.log('error connecting',error.message);
+  })
+
 let authors = [
   {
     name: 'Robert Martin',
@@ -108,7 +125,7 @@ const typeDefs = `
 
   type Book{
     title : String!
-    author : String
+    author : Author!
     published : Int
     genres : [String]
   }
@@ -168,17 +185,21 @@ const resolvers = {
       if(!author){
         console.log("createing author")
         //create author
-        const author = { name:args.author, id:uuid()}
+        //const author = { name:args.author, id:uuid()}
+        const author = new Author({...args.author})
         console.log("new author",author)
-        authors = authors.concat(author)
-        console.log("authors",authors)
+        //authors = authors.concat(author)
+        //console.log("authors",authors)
+        author.save()
       }
 
       //create new book with arguments and generated id
-      const book = {...args,id:uuid()}
+      //const book = {...args,id:uuid()}
+      const book = new Book({...args})
       //add book
-      books = books.concat(book)
-      return book
+      //books = books.concat(book)
+      //return book
+      return book.save()
     },
     editAuthor : (root,args) => {
       console.log('---edit author---')
