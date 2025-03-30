@@ -61,8 +61,8 @@ const typeDefs = `
 
 const resolvers = {
   Query: {
-    bookCount : () => books.length,
-    authorCount : () => authors.length,
+    bookCount : async () => await Book.collection.countDocuments(),
+    authorCount : async () => await Author.collection.countDocuments(),
     allBooks : (root,args) => {
       //if no arguments passed - ie no filter on author
       //then pass all
@@ -79,10 +79,10 @@ const resolvers = {
       filteredBooks
       return filteredBooks
     },
-    allAuthors : () => authors      
+    allAuthors : async () => await Author.find({})     
   },
   Author : {
-    bookCount : ({name}) => books.filter(book => book.author === name).length  
+    bookCount : async ({id}) => await Book.countDocuments({author:id})
   },
   Mutation : {
     addBook : async (root,args) => {
@@ -109,12 +109,12 @@ const resolvers = {
     editAuthor : async (root,args) => {
       console.log('---edit author---')
       //find author
-      const author = await Author.findOne({name:args.name})
+      let author = await Author.findOne({name:args.name})
       if(!author){
         return null
       }
       console.log('author found',author)
-      author.setBornTo = args.setBornTo
+      author.born = args.setBornTo
       await author.save()
       console.log('updated')
       return author
