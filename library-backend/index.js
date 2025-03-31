@@ -25,7 +25,7 @@ mongoose.connect(MONGODB_URI)
 
 const typeDefs = `
   type Author{
-    name : String!
+    name : String
     born : Int
     bookCount : String
   }
@@ -63,21 +63,21 @@ const resolvers = {
   Query: {
     bookCount : async () => await Book.collection.countDocuments(),
     authorCount : async () => await Author.collection.countDocuments(),
-    allBooks : (root,args) => {
-      //if no arguments passed - ie no filter on author
-      //then pass all
-      if(!args.author &&!args.genre){
-        return books
+    allBooks: async (root, args) => {
+      let query = {};
+      //if author is passed filter
+      if (args.author) {
+        const author = await Author.findOne({ name: args.author });
+        if (author){ 
+        query.author = author._id;
       }
-      //filter the books by the author
-      let filteredBooks = args.author ? 
-      books.filter(book => book.author === args.author) : 
-      books
-      // //filter the books by the genre
-      filteredBooks = args.genre ? 
-      filteredBooks.filter(book => book.genres.includes(args.genre)):
-      filteredBooks
-      return filteredBooks
+      }
+      //if genere is passed add to query
+      if (args.genre) {
+        query.genres = args.genre;
+      }
+      //get book and populate author fields
+      return Book.find(query).populate("author");
     },
     allAuthors : async () => await Author.find({})     
   },
