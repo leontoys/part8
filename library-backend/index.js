@@ -7,7 +7,8 @@ const mongoose = require('mongoose')
 mongoose.set('strictQuery', false)
 const Author = require('./models/author.js')
 const Book = require('./models/book.js')
-const author = require('./models/author.js')
+const User = require('./models/user.js')
+const jwt = require('jsonwebtoken')
 
 require('dotenv').config()
 
@@ -24,6 +25,16 @@ mongoose.connect(MONGODB_URI)
   })
 
 const typeDefs = `
+type User {
+  username: String!
+  favoriteGenre: String!
+  id: ID!
+}
+
+type Token {
+  value: String!
+}
+
   type Author{
     name : String
     born : Int
@@ -42,6 +53,7 @@ const typeDefs = `
     authorCount : Int!
     allBooks(author:String,genre:String) : [Book!]
     allAuthors : [Author!]
+    me: User
   }
 
   type Mutation {
@@ -56,11 +68,23 @@ const typeDefs = `
       name : String!
       setBornTo : Int!
     ):Author
+
+  createUser(
+    username: String!
+    favoriteGenre: String!
+  ): User
+  login(
+    username: String!
+    password: String!
+  ): Token    
   }
 `
 
 const resolvers = {
   Query: {
+    me: (root, args, context) => {
+      return context.currentUser
+    },    
     bookCount : async () => await Book.collection.countDocuments(),
     authorCount : async () => await Author.collection.countDocuments(),
     allBooks: async (root, args) => {
@@ -79,13 +103,21 @@ const resolvers = {
       //get book and populate author fields
       return Book.find(query).populate("author");
     },
-    allAuthors : async () => await Author.find({})     
+    allAuthors : async () => await Author.find({})  
   },
   Author : {
     bookCount : async ({id}) => await Book.countDocuments({author:id})
   },
   Mutation : {
-    addBook : async (root,args) => {
+    addBook : async (root,args, context) => {
+      const currentUser = context.currentUser
+      if (!currentUser) {        
+        throw new GraphQLError('not authenticated', {          
+          extensions: {            
+            code: 'BAD_USER_INPUT',          
+          }        
+        })      
+      }      
       console.log('---adding Book----')
       //if author is not added create Author
       let author = await Author.findOne({name:args.author})
@@ -117,7 +149,15 @@ const resolvers = {
       }
       return book
     },
-    editAuthor : async (root,args) => {
+    editAuthor : async (root,args, context) => {
+      const currentUser = context.currentUser
+      if (!currentUser) {        
+        throw new GraphQLError('not authenticated', {          
+          extensions: {            
+            code: 'BAD_USER_INPUT',          
+          }        
+        })      
+      }      
       console.log('---edit author---')
       //find author
       let author = await Author.findOne({name:args.name})
@@ -140,7 +180,39 @@ const resolvers = {
           })
       }
       return author
-    }
+    },
+    createUser: async (root, args) => {
+      const user = new User({ username: args.username })
+  
+      return user.save()
+        .catch(error => {
+          throw new GraphQLError('Creating the user failed', {
+            extensions: {
+              code: 'BAD_USER_INPUT',
+              invalidArgs: args.username,
+              error
+            }
+          })
+        })
+    },   
+    login: async (root, args) => {
+      const user = await User.findOne({ username: args.username })
+  
+      if ( !user || args.password !== 'secret' ) {
+        throw new GraphQLError('wrong credentials', {
+          extensions: {
+            code: 'BAD_USER_INPUT'
+          }
+        })        
+      }
+  
+      const userForToken = {
+        username: user.username,
+        id: user._id,
+      }
+  
+      return { value: jwt.sign(userForToken, process.env.JWT_SECRET) }
+    }     
   }
 }
 
@@ -151,6 +223,16 @@ const server = new ApolloServer({
 
 startStandaloneServer(server, {
   listen: { port: 4001 },
+  context: async ({ req, res }) => {    
+    const auth = req ? req.headers.authorization : null    
+    if (auth && auth.startsWith('Bearer ')) {      
+      const decodedToken = jwt.verify(        
+        auth.substring(7), process.env.JWT_SECRET      
+      )      
+      const currentUser = await User        
+      .findById(decodedToken.id)
+     
+      return { currentUser }    }  },  
 }).then(({ url }) => {
   console.log(`Server ready at ${url}`)
 })
