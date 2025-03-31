@@ -102,8 +102,19 @@ const resolvers = {
       const book = new Book({...args,author:author})
       console.log('new book',book)
       //add book
-      await book.save()
-      console.log('saved')
+      try {
+        await book.save()
+        console.log('saved') 
+      } 
+      catch (error) {
+        console.error(error.message)
+        throw new GraphQLError('Saving Book failed', {          
+          extensions: {            
+            code: 'BAD_USER_INPUT',            
+            invalidArgs: args.title,            
+            error }
+          })
+      }
       return book
     },
     editAuthor : async (root,args) => {
@@ -115,8 +126,19 @@ const resolvers = {
       }
       console.log('author found',author)
       author.born = args.setBornTo
-      await author.save()
-      console.log('updated')
+      try {
+        await author.save()
+        console.log('updated')        
+      } 
+      catch (error) {
+        console.error(error.message)
+        throw new GraphQLError('Updating Author failed', {          
+          extensions: {            
+            code: 'BAD_USER_INPUT',            
+            invalidArgs: args.setBornTo,            
+            error }
+          })
+      }
       return author
     }
   }
