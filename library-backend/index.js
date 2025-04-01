@@ -7,7 +7,7 @@ const mongoose = require('mongoose')
 mongoose.set('strictQuery', false)
 const Author = require('./models/author.js')
 const Book = require('./models/book.js')
-const User = require('./models/user.js')
+const User = require('./models/user.js')//added user model
 const jwt = require('jsonwebtoken')
 
 require('dotenv').config()
@@ -82,6 +82,7 @@ type Token {
 
 const resolvers = {
   Query: {
+    //get the logged in user from the context
     me: (root, args, context) => {
       return context.currentUser
     },    
@@ -223,6 +224,7 @@ const server = new ApolloServer({
 
 startStandaloneServer(server, {
   listen: { port: 4001 },
+  //for handling auth
   context: async ({ req, res }) => {    
     const auth = req ? req.headers.authorization : null    
     if (auth && auth.startsWith('Bearer ')) {      
