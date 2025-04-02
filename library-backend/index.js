@@ -197,21 +197,21 @@ const resolvers = {
         })
     },   
     login: async (root, args) => {
+      console.log('---logging in---')
       const user = await User.findOne({ username: args.username })
-  
+      console.log('user found',user)
       if ( !user || args.password !== 'secret' ) {
         throw new GraphQLError('wrong credentials', {
           extensions: {
             code: 'BAD_USER_INPUT'
           }
         })        
-      }
-  
+      }     
       const userForToken = {
         username: user.username,
         id: user._id,
       }
-  
+      console.log('user for token',userForToken)
       return { value: jwt.sign(userForToken, process.env.JWT_SECRET) }
     }     
   }

@@ -2,10 +2,16 @@ import React, { useState , useEffect} from 'react'
 import { useQuery, useMutation  } from "@apollo/client";
 import { LOGIN } from "../queries.js";
 
-const Login = ({setToken}) => {
+const Login = (props) => {
+
+    if (!props.show) {
+        return null
+      }    
 
     const [name,setName] = useState('')
     const [password,setPassword] = useState('')
+    const setToken = props.setToken
+    const setPage = props.setPage
 
     const [ login, result ] = useMutation(LOGIN, {    onError: (error) => {
         console.log(error.graphQLErrors[0].message)
@@ -13,13 +19,16 @@ const Login = ({setToken}) => {
     })    
 
     useEffect(() => {    
+        console.log('result changed')
         if ( result.data ) {      
             const token = result.data.login.value      
             setToken(token)      
-            localStorage.setItem('phonenumbers-user-token', token)    
+            localStorage.setItem('token', token) 
+            setPage('add')   
         }  }, [result.data])
 
     const handleLogin = (e)=>{
+        console.log('---logging in')
         e.preventDefault()
         login({ variables: { name, password } })
         setName('')
