@@ -47,3 +47,15 @@ mutation createBook($name: String!, $year: Int!) {
   }
 }
 `
+
+export const LOGIN = gql`
+mutation login($name:String!,$password:String!)
+  {
+  login (
+    username: $name
+    password: $password
+  ) {
+    value
+  }
+}
+`
