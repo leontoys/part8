@@ -18,7 +18,6 @@ const App = () => {
     client.resetStore()
     setPage('login')  
   }
-  console.log("token",token)
   return (
     <div>
       <div>
