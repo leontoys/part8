@@ -1,6 +1,6 @@
 import React, { useState , useEffect} from 'react'
 import { useQuery, useMutation  } from "@apollo/client";
-import { LOGIN } from "../queries.js";
+import { LOGIN, ME } from "../queries.js";
 
 const Login = (props) => {
 
@@ -13,7 +13,8 @@ const Login = (props) => {
     const setToken = props.setToken
     const setPage = props.setPage
 
-    const [ login, result ] = useMutation(LOGIN, {    onError: (error) => {
+    const [ login, result ] = useMutation(LOGIN, {   
+        onError: (error) => {
         console.log(error.graphQLErrors[0].message)
       }
     })    

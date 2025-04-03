@@ -84,6 +84,8 @@ const resolvers = {
   Query: {
     //get the logged in user from the context
     me: (root, args, context) => {
+      console.log('--me--')
+      console.log(context.currentUser)
       return context.currentUser
     },    
     bookCount : async () => await Book.collection.countDocuments(),
@@ -185,7 +187,7 @@ const resolvers = {
       return author
     },
     createUser: async (root, args) => {
-      const user = new User({ username: args.username })
+      const user = new User({ username: args.username, favoriteGenre : args.favoriteGenre })
   
       return user.save()
         .catch(error => {
@@ -235,7 +237,7 @@ startStandaloneServer(server, {
       )      
       const currentUser = await User        
       .findById(decodedToken.id)
-     
+      console.log('current user',currentUser)
       return { currentUser }    }  },  
 }).then(({ url }) => {
   console.log(`Server ready at ${url}`)
