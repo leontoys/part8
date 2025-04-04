@@ -33,10 +33,16 @@ const resolvers = {
         //get book and populate author fields
         return Book.find(query).populate("author");
       },
-      allAuthors : async () => await Author.find({})  
+      allAuthors : async () => {
+        console.log('Author.find')
+        const result = await Author.find({})  
+        return result }
     },
     Author : {
-      bookCount : async ({id}) => await Book.countDocuments({author:id})
+      bookCount : async ({id}) => {
+        console.log('Book count')
+        const result = await Book.countDocuments({author:id})
+        return result }
     },
     Mutation : {
       addBook : async (root,args, context) => {
