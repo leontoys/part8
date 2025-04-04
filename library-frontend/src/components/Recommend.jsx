@@ -19,7 +19,7 @@ const Recommend = (props) => {
     fetchPolicy: "network-only", //always
   });  
 
-//moved all handling to down so that the number of queries don't change between renders
+//moved all handling to down and queries to up so that the number of queries don't change between renders
   if (meLoading) {
     return <div>Loading...</div>;
   }
