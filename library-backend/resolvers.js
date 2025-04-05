@@ -6,6 +6,7 @@ const jwt = require('jsonwebtoken')
 //add for subscription
 const { PubSub } = require('graphql-subscriptions')
 const pubsub = new PubSub()
+const loaders = require('./loaders.js')
 
 const resolvers = {
     Query: {
@@ -39,10 +40,13 @@ const resolvers = {
         return result }
     },
     Author : {
-      bookCount : async ({id}) => {
-        console.log('Book count')
-        const result = await Book.countDocuments({author:id})
-        return result }
+      bookCount: async (author, args, context) => {
+        return loaders.bookCountLoader.load(author._id)
+      },
+      // bookCount : async ({id}) => {
+      //   console.log('Book count')
+      //   const result = await Book.countDocuments({author:id})
+      //   return result }
     },
     Mutation : {
       addBook : async (root,args, context) => {
