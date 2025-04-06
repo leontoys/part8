@@ -7,7 +7,6 @@ const bookCountLoader = new DataLoader(async (authorIds) => {
   const books = await Book.find({ author: { $in: authorIds } })
   console.log('books',books)
 
-
   return authorIds.map(id => books.filter(book => book.author.toString() === id.toString()).length)
 })
 
